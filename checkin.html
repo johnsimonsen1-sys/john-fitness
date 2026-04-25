@@ -1,0 +1,1414 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Johns Daglige Check-in</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Karla:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f4f0;
+    --surface: #ffffff;
+    --card: #ffffff;
+    --border: #e8e4de;
+    --border-light: #d8d4ce;
+    --text: #1a1a18;
+    --muted: #999990;
+    --orange: #e8530a;
+    --green: #00a862;
+    --red: #d93025;
+    --yellow: #e6a800;
+    --purple: #7b4fa6;
+    --blue: #1a5fa8;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Karla', sans-serif;
+    min-height: 100vh;
+    padding-bottom: 40px;
+  }
+
+  /* HEADER */
+  .header {
+    padding: 24px 20px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  .header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 4px;
+  }
+
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+
+  .logo span { color: var(--orange); }
+
+  .date-badge {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  .date-day {
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .streak-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .streak-chip {
+    background: rgba(232,83,10,0.08);
+    border: 1px solid rgba(232,83,10,0.2);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--orange);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .week-dots {
+    display: flex;
+    gap: 4px;
+  }
+
+  .week-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--border);
+  }
+
+  .week-dot.perfect { background: var(--green); }
+  .week-dot.partial { background: var(--yellow); }
+  .week-dot.missed { background: var(--red); opacity: 0.5; }
+  .week-dot.today { background: var(--orange); animation: pulse 1.5s infinite; }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(1.2); }
+  }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    padding: 0 20px;
+    border-bottom: 1px solid var(--border);
+    gap: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+
+  .tab {
+    padding: 12px 16px;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    cursor: pointer;
+    border: none;
+    background: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    white-space: nowrap;
+    transition: all 0.2s;
+  }
+
+  .tab.active {
+    color: var(--orange);
+    border-bottom-color: var(--orange);
+  }
+
+  /* CONTENT */
+  .content {
+    padding: 16px 20px;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* SECTION LABEL */
+  .section-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--muted);
+    margin-bottom: 10px;
+    margin-top: 18px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-label:first-child { margin-top: 0; }
+
+  /* CHECK ITEMS */
+  .check-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 14px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .check-item::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.2s;
+    border-radius: 12px;
+  }
+
+  .check-item.yes { border-color: var(--green); background: rgba(0,201,122,0.07); }
+  .check-item.yes::before { background: rgba(0,201,122,0.05); opacity: 1; }
+
+  .check-item.no { border-color: var(--red); background: rgba(255,68,68,0.07); }
+  .check-item.no::before { background: rgba(255,68,68,0.05); opacity: 1; }
+
+  /* For "bad" items (alcohol, snacks) - reversed logic */
+  .check-item.bad-item.yes { border-color: var(--red); background: rgba(255,68,68,0.07); }
+  .check-item.bad-item.no { border-color: var(--green); background: rgba(0,201,122,0.07); }
+
+  .check-icon {
+    font-size: 1.4rem;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface);
+    border-radius: 8px;
+    flex-shrink: 0;
+    transition: transform 0.2s;
+  }
+
+  .check-item.yes .check-icon,
+  .check-item.no .check-icon { transform: scale(1.1); }
+
+  .check-body { flex: 1; }
+
+  .check-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text);
+    line-height: 1.2;
+  }
+
+  .check-sub {
+    font-size: 0.72rem;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .check-toggle {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .toggle-btn {
+    width: 36px;
+    height: 28px;
+    border-radius: 6px;
+    border: 1.5px solid var(--border);
+    background: var(--surface);
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .toggle-btn.yes-btn.active { background: var(--green); border-color: var(--green); color: #000; }
+  .toggle-btn.no-btn.active { background: var(--red); border-color: var(--red); color: #fff; }
+
+  /* Bad items - reversed active colors */
+  .bad-item .toggle-btn.yes-btn.active { background: var(--red); border-color: var(--red); color: #fff; }
+  .bad-item .toggle-btn.no-btn.active { background: var(--green); border-color: var(--green); color: #000; }
+
+  /* PROTEIN SLIDER */
+  .protein-card {
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 8px;
+  }
+
+  .protein-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+
+  .protein-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .protein-icon {
+    font-size: 1.3rem;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface);
+    border-radius: 8px;
+  }
+
+  .protein-name { font-weight: 600; font-size: 0.9rem; }
+  .protein-sub { font-size: 0.72rem; color: var(--muted); }
+
+  .protein-value {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--orange);
+    line-height: 1;
+  }
+
+  .protein-value span { font-size: 0.8rem; color: var(--muted); font-family: 'Karla', sans-serif; font-weight: 400; }
+
+  .protein-bar-bg {
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    margin-bottom: 8px;
+    position: relative;
+  }
+
+  .protein-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: var(--orange);
+    transition: width 0.3s;
+    max-width: 100%;
+  }
+
+  .protein-bar-fill.good { background: var(--green); }
+
+  .protein-steps {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .step-btn {
+    flex: 1;
+    min-width: 52px;
+    padding: 7px 6px;
+    border-radius: 8px;
+    border: 1.5px solid var(--border);
+    background: var(--surface);
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+  }
+
+  .step-btn.active {
+    border-color: var(--orange);
+    background: rgba(232,83,10,0.08);
+    color: var(--orange);
+  }
+
+  /* NOTE */
+  .note-card {
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 8px;
+  }
+
+  .note-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .note-icon {
+    font-size: 1.1rem;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface);
+    border-radius: 8px;
+  }
+
+  .note-title { font-weight: 600; font-size: 0.9rem; }
+  .note-sub { font-size: 0.72rem; color: var(--muted); }
+
+  textarea {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    padding: 10px 12px;
+    color: var(--text);
+    font-family: 'Karla', sans-serif;
+    font-size: 0.85rem;
+    resize: none;
+    outline: none;
+    line-height: 1.5;
+    transition: border-color 0.2s;
+  }
+
+  textarea:focus { border-color: var(--orange); }
+  textarea::placeholder { color: var(--muted); }
+
+  /* SAVE BUTTON */
+  .save-btn {
+    width: 100%;
+    padding: 16px;
+    background: var(--orange);
+    border: none;
+    border-radius: 12px;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #fff;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: all 0.15s;
+  }
+
+  .save-btn:active { transform: scale(0.98); background: #e04e1a; }
+
+  .save-btn:disabled {
+    background: var(--border);
+    color: var(--muted);
+    cursor: default;
+  }
+
+  /* SCORE DISPLAY */
+  .score-display {
+    display: none;
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    margin-top: 12px;
+    text-align: center;
+  }
+
+  .score-display.show { display: block; }
+
+  .score-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 3.5rem;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .score-label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+
+  .score-breakdown {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+  }
+
+  .score-chip {
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 5px;
+  }
+
+  .score-chip.ok { background: rgba(0,201,122,0.15); color: var(--green); }
+  .score-chip.miss { background: rgba(255,68,68,0.15); color: var(--red); }
+
+  /* HISTORY PANEL */
+  .history-empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--muted);
+  }
+
+  .history-empty-icon { font-size: 2.5rem; margin-bottom: 10px; }
+  .history-empty-text { font-size: 0.85rem; line-height: 1.6; }
+
+  .history-entry {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 8px;
+  }
+
+  .history-date {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .history-date-text {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .history-score {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 800;
+  }
+
+  .history-chips {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+  }
+
+  .h-chip {
+    font-size: 0.62rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+
+  .h-chip.ok { background: rgba(0,201,122,0.12); color: var(--green); }
+  .h-chip.miss { background: rgba(255,68,68,0.12); color: var(--red); }
+  .h-chip.warn { background: rgba(255,193,7,0.12); color: var(--yellow); }
+
+  .history-note {
+    font-size: 0.75rem;
+    color: var(--muted);
+    font-style: italic;
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* STATS PANEL */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    text-align: center;
+  }
+
+  .stat-val {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.8rem;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .stat-lbl {
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+  }
+
+  .habit-row {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .habit-name {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.82rem;
+    font-weight: 500;
+  }
+
+  .habit-pct {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 800;
+  }
+
+  .habit-bar-wrap {
+    width: 70px;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-left: 8px;
+  }
+
+  .habit-bar {
+    height: 100%;
+    border-radius: 2px;
+    background: var(--green);
+  }
+
+  .habit-bar.warn { background: var(--yellow); }
+  .habit-bar.bad { background: var(--red); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div>
+      <div class="logo">JOHN'S <span>CHECK-IN</span></div>
+      <div style="font-size:0.65rem;color:var(--muted);margin-top:2px">Masters Athlete · Daglig log</div>
+    </div>
+    <div class="date-badge">
+      <div class="date-day" id="todayDay">—</div>
+      <div id="todayDate" style="font-size:0.6rem;margin-top:1px">—</div>
+    </div>
+  </div>
+  <div class="streak-row">
+    <div class="streak-chip">🔥 <span id="streakCount">0</span> dages streak</div>
+    <div class="week-dots" id="weekDots"></div>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="showTab('today',this)">I dag</button>
+  <button class="tab" onclick="showTab('history',this)">Historik</button>
+  <button class="tab" onclick="showTab('inbody',this)">InBody ⚖️</button>
+  <button class="tab" onclick="showTab('stats',this)">Statistik</button>
+</div>
+
+<div class="content">
+
+  <!-- TODAY PANEL -->
+  <div class="panel active" id="panel-today">
+
+    <div class="section-label">💊 Supplements – Evidensbaserede</div>
+
+    <div class="check-item" id="item-dvitamin" onclick="toggle('dvitamin')">
+      <div class="check-icon">☀️</div>
+      <div class="check-body">
+        <div class="check-name">D-vitamin</div>
+        <div class="check-sub">Biosym D-Pearls · 3.000 IU · Stærk evidens</div>
+      </div>
+      <div class="check-toggle">
+        <button class="toggle-btn yes-btn" id="dvitamin-yes" onclick="event.stopPropagation();set('dvitamin','yes')">Ja</button>
+        <button class="toggle-btn no-btn" id="dvitamin-no" onclick="event.stopPropagation();set('dvitamin','no')">Nej</button>
+      </div>
+    </div>
+
+    <div class="check-item" id="item-omega3" onclick="toggle('omega3')">
+      <div class="check-icon">🐟</div>
+      <div class="check-body">
+        <div class="check-name">Omega-3</div>
+        <div class="check-sub">Möller's / Bodylab · 2-3g EPA+DHA · Til fedtholdigt måltid</div>
+      </div>
+      <div class="check-toggle">
+        <button class="toggle-btn yes-btn" id="omega3-yes" onclick="event.stopPropagation();set('omega3','yes')">Ja</button>
+        <button class="toggle-btn no-btn" id="omega3-no" onclick="event.stopPropagation();set('omega3','no')">Nej</button>
+      </div>
+    </div>
+
+    <div class="check-item" id="item-magnesium" onclick="toggle('magnesium')">
+      <div class="check-icon">🟡</div>
+      <div class="check-body">
+        <div class="check-name">Magnesium</div>
+        <div class="check-sub">Biosym MagnesiumAktiv · 300-400mg glycinat · Om aftenen</div>
+      </div>
+      <div class="check-toggle">
+        <button class="toggle-btn yes-btn" id="magnesium-yes" onclick="event.stopPropagation();set('magnesium','yes')">Ja</button>
+        <button class="toggle-btn no-btn" id="magnesium-no" onclick="event.stopPropagation();set('magnesium','no')">Nej</button>
+      </div>
+    </div>
+
+    <div class="check-item" id="item-kollagen" onclick="toggle('kollagen')">
+      <div class="check-icon">🦴</div>
+      <div class="check-body">
+        <div class="check-name">Kollagen + C-vitamin</div>
+        <div class="check-sub">Bodylab / Vital Proteins · 15g · 30 min før træning eller i kaffe</div>
+      </div>
+      <div class="check-toggle">
+        <button class="toggle-btn yes-btn" id="kollagen-yes" onclick="event.stopPropagation();set('kollagen','yes')">Ja</button>
+        <button class="toggle-btn no-btn" id="kollagen-no" onclick="event.stopPropagation();set('kollagen','no')">Nej</button>
+      </div>
+    </div>
+
+    <div class="section-label">🥗 Kost</div>
+
+    <!-- PROTEIN TRACKER -->
+    <div class="protein-card">
+      <div class="protein-header">
+        <div class="protein-title">
+          <div class="protein-icon">💪</div>
+          <div>
+            <div class="protein-name">Protein i dag</div>
+            <div class="protein-sub">Mål: 180g minimum</div>
+          </div>
+        </div>
+        <div>
+          <div class="protein-value"><span id="proteinVal">—</span><span>g</span></div>
+        </div>
+      </div>
+      <div class="protein-bar-bg">
+        <div class="protein-bar-fill" id="proteinBar" style="width:0%"></div>
+      </div>
+      <div class="protein-steps">
+        <button class="step-btn" onclick="setProtein(120)">~120g</button>
+        <button class="step-btn" onclick="setProtein(150)">~150g</button>
+        <button class="step-btn" onclick="setProtein(180)">~180g</button>
+        <button class="step-btn" onclick="setProtein(200)">~200g</button>
+        <button class="step-btn" onclick="setProtein(220)">220g+</button>
+      </div>
+    </div>
+
+    <div class="check-item" id="item-maaltidsplan" onclick="toggle('maaltidsplan')">
+      <div class="check-icon">📋</div>
+      <div class="check-body">
+        <div class="check-name">Fulgte madplanen</div>
+        <div class="check-sub">Nogenlunde efter plan – eller notér afvigelse nedenfor</div>
+      </div>
+      <div class="check-toggle">
+        <button class="toggle-btn yes-btn" id="maaltidsplan-yes" onclick="event.stopPropagation();set('maaltidsplan','yes')">Ja</button>
+        <button class="toggle-btn no-btn" id="maaltidsplan-no" onclick="event.stopPropagation();set('maaltidsplan','no')">Nej</button>
+      </div>
+    </div>
+
+    <div class="section-label">🚫 Hold dig fra</div>
+
+    <div class="check-item bad-item" id="item-alkohol" onclick="toggle('alkohol')">
+      <div class="check-icon">🍺</div>
+      <div class="check-body">
+        <div class="check-name">Alkoholfri dag</div>
+        <div class="check-sub">Alkohol hæmmer restitution og led-heling markant</div>
+      </div>
+      <div class="check-toggle">
+        <button class="toggle-btn yes-btn" id="alkohol-yes" onclick="event.stopPropagation();set('alkohol','yes')">Ja</button>
+        <button class="toggle-btn no-btn" id="alkohol-no" onclick="event.stopPropagation();set('alkohol','no')">Nej</button>
+      </div>
+    </div>
+
+    <div class="check-item bad-item" id="item-snacks" onclick="toggle('snacks')">
+      <div class="check-icon">🍫</div>
+      <div class="check-body">
+        <div class="check-name">Ingen unødvendige snacks</div>
+        <div class="check-sub">Slik, chips, kager og lignende</div>
+      </div>
+      <div class="check-toggle">
+        <button class="toggle-btn yes-btn" id="snacks-yes" onclick="event.stopPropagation();set('snacks','yes')">Ja</button>
+        <button class="toggle-btn no-btn" id="snacks-no" onclick="event.stopPropagation();set('snacks','no')">Nej</button>
+      </div>
+    </div>
+
+    <div class="section-label">🏋️ Træning</div>
+
+    <div class="check-item" id="item-traening" onclick="toggle('traening')">
+      <div class="check-icon">💥</div>
+      <div class="check-body">
+        <div class="check-name">Træning gennemført</div>
+        <div class="check-sub">Comptrain session eller aktiv mobilitet</div>
+      </div>
+      <div class="check-toggle">
+        <button class="toggle-btn yes-btn" id="traening-yes" onclick="event.stopPropagation();set('traening','yes')">Ja</button>
+        <button class="toggle-btn no-btn" id="traening-no" onclick="event.stopPropagation();set('traening','no')">Nej</button>
+      </div>
+    </div>
+
+    <div class="check-item" id="item-mobilitet" onclick="toggle('mobilitet')">
+      <div class="check-icon">🦵</div>
+      <div class="check-body">
+        <div class="check-name">Mobilitet / opvarmning</div>
+        <div class="check-sub">Warm-up & mobility – særligt vigtigt for knæet</div>
+      </div>
+      <div class="check-toggle">
+        <button class="toggle-btn yes-btn" id="mobilitet-yes" onclick="event.stopPropagation();set('mobilitet','yes')">Ja</button>
+        <button class="toggle-btn no-btn" id="mobilitet-no" onclick="event.stopPropagation();set('mobilitet','no')">Nej</button>
+      </div>
+    </div>
+
+    <div class="section-label">😴 Søvn – Fra dit Amazefit ur</div>
+
+    <div class="protein-card">
+      <div class="protein-header">
+        <div class="protein-title">
+          <div class="protein-icon">⏱️</div>
+          <div>
+            <div class="protein-name">Søvnvarighed</div>
+            <div class="protein-sub">Mål: 7-8 timer · Under 6t = advarsel</div>
+          </div>
+        </div>
+        <div>
+          <div class="protein-value"><span id="sleepVal">—</span><span style="font-size:0.8rem;color:var(--muted);font-family:'Karla',sans-serif"> t</span></div>
+        </div>
+      </div>
+      <div class="protein-bar-bg">
+        <div class="protein-bar-fill" id="sleepBar" style="width:0%"></div>
+      </div>
+      <div class="protein-steps">
+        <button class="step-btn" onclick="setSleep(4.5)">4½t</button>
+        <button class="step-btn" onclick="setSleep(5.5)">5½t</button>
+        <button class="step-btn" onclick="setSleep(6.5)">6½t</button>
+        <button class="step-btn" onclick="setSleep(7.5)">7½t</button>
+        <button class="step-btn" onclick="setSleep(8.5)">8½t+</button>
+      </div>
+    </div>
+
+    <div class="protein-card">
+      <div style="display:flex;gap:10px">
+        <div style="flex:1">
+          <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:6px">📊 HRV</div>
+          <div style="display:flex;gap:5px;flex-wrap:wrap">
+            <button class="step-btn" onclick="setHRV(30)" style="min-width:40px">30</button>
+            <button class="step-btn" onclick="setHRV(40)" style="min-width:40px">40</button>
+            <button class="step-btn" onclick="setHRV(50)" style="min-width:40px">50</button>
+            <button class="step-btn" onclick="setHRV(60)" style="min-width:40px">60</button>
+            <button class="step-btn" onclick="setHRV(70)" style="min-width:40px">70+</button>
+          </div>
+          <div style="margin-top:6px;font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;color:var(--purple)"><span id="hrvVal">—</span></div>
+        </div>
+        <div style="flex:1">
+          <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:6px">❤️ Hvilepuls</div>
+          <div style="display:flex;gap:5px;flex-wrap:wrap">
+            <button class="step-btn" onclick="setRHR(50)" style="min-width:40px">50</button>
+            <button class="step-btn" onclick="setRHR(55)" style="min-width:40px">55</button>
+            <button class="step-btn" onclick="setRHR(60)" style="min-width:40px">60</button>
+            <button class="step-btn" onclick="setRHR(65)" style="min-width:40px">65</button>
+            <button class="step-btn" onclick="setRHR(70)" style="min-width:40px">70+</button>
+          </div>
+          <div style="margin-top:6px;font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;color:var(--orange)"><span id="rhrVal">—</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-label">📝 Note til dagen</div>
+
+    <div class="note-card">
+      <div class="note-header">
+        <div class="note-icon">✏️</div>
+        <div>
+          <div class="note-title">Afvigelser / kommentarer</div>
+          <div class="note-sub">Hvad afveg du fra planen? Hvordan havde knæet det?</div>
+        </div>
+      </div>
+      <textarea id="dayNote" rows="3" placeholder="F.eks. 'Sprang kollagen over om morgenen, tog det til frokost i stedet. Knæet lidt ømt efter squats...'"></textarea>
+    </div>
+
+    <button class="save-btn" id="saveBtn" onclick="saveDay()">Gem dagens check-in</button>
+
+    <div class="score-display" id="scoreDisplay">
+      <div class="score-num" id="scoreNum">—</div>
+      <div class="score-label">Point i dag</div>
+      <div class="score-breakdown" id="scoreBreakdown"></div>
+    </div>
+
+  </div>
+
+  <!-- HISTORY PANEL -->
+  <div class="panel" id="panel-history">
+    <div id="historyContent">
+      <div class="history-empty">
+        <div class="history-empty-icon">📅</div>
+        <div class="history-empty-text">Ingen historik endnu.<br>Start med at logge i dag!</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INBODY PANEL -->
+  <div class="panel" id="panel-inbody">
+    <div class="section-label" style="margin-top:0">⚖️ InBody Scanning – Hver 14. dag</div>
+
+    <div class="tip" style="margin-bottom:12px">
+      <strong>Næste scanning:</strong> <span id="nextScanDate">—</span> · Tag altid scanning om morgenen på tom mave for konsistente resultater.
+    </div>
+
+    <div class="protein-card">
+      <div style="margin-bottom:12px">
+        <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px">📅 Dato for scanning</div>
+        <input type="date" id="scanDate" style="width:100%;background:var(--surface);border:1px solid var(--border-light);border-radius:8px;padding:10px 12px;color:var(--text);font-family:'Karla',sans-serif;font-size:0.9rem;outline:none;">
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+        <div>
+          <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:5px">⚖️ Vægt (kg)</div>
+          <input type="number" id="scanVaegt" step="0.1" placeholder="82.5" style="width:100%;background:var(--surface);border:1px solid var(--border-light);border-radius:8px;padding:10px 12px;color:var(--text);font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;outline:none;">
+        </div>
+        <div>
+          <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:5px">💪 Muskelmasse (kg)</div>
+          <input type="number" id="scanMuskel" step="0.1" placeholder="40.3" style="width:100%;background:var(--surface);border:1px solid var(--border-light);border-radius:8px;padding:10px 12px;color:var(--text);font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;outline:none;">
+        </div>
+        <div>
+          <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:5px">🔥 Fedtprocent (%)</div>
+          <input type="number" id="scanFedt" step="0.1" placeholder="14.6" style="width:100%;background:var(--surface);border:1px solid var(--border-light);border-radius:8px;padding:10px 12px;color:var(--text);font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;outline:none;">
+        </div>
+        <div>
+          <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:5px">🏆 InBody Score</div>
+          <input type="number" id="scanScore" placeholder="91" style="width:100%;background:var(--surface);border:1px solid var(--border-light);border-radius:8px;padding:10px 12px;color:var(--text);font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;outline:none;">
+        </div>
+      </div>
+
+      <button class="save-btn" onclick="saveInBody()" style="margin-top:0">Gem InBody scanning</button>
+    </div>
+
+    <div class="section-label">📈 Tidligere scanninger</div>
+    <div id="inbodyHistory">
+      <div class="history-empty">
+        <div class="history-empty-icon">⚖️</div>
+        <div class="history-empty-text">Ingen scanninger endnu.<br>Mål: Scan hver 14. dag.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS PANEL -->
+  <div class="panel" id="panel-stats">
+    <div id="statsContent">
+      <div class="history-empty">
+        <div class="history-empty-icon">📊</div>
+        <div class="history-empty-text">Log mindst 3 dage<br>for at se statistik.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ─── State ───────────────────────────────────────────────────────
+const CHECKS = ['dvitamin','omega3','magnesium','kollagen','maaltidsplan','alkohol','snacks','traening','mobilitet'];
+const BAD_ITEMS = ['alkohol','snacks'];
+const CHECK_LABELS = {
+  dvitamin: 'D-vitamin',
+  omega3: 'Omega-3',
+  magnesium: 'Magnesium',
+  kollagen: 'Kollagen',
+  maaltidsplan: 'Madplan',
+  alkohol: 'Alkoholfri',
+  snacks: 'Ingen snacks',
+  traening: 'Træning',
+  mobilitet: 'Mobilitet'
+};
+
+let today = {};
+let proteinToday = null;
+let sleepToday = null;
+let hrvToday = null;
+let rhrToday = null;
+let history = [];
+let inbodyHistory = [];
+
+// ─── Init ─────────────────────────────────────────────────────────
+function init() {
+  setDateDisplay();
+  loadData();
+  renderWeekDots();
+}
+
+function todayKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function setDateDisplay() {
+  const d = new Date();
+  const days = ['Søndag','Mandag','Tirsdag','Onsdag','Torsdag','Fredag','Lørdag'];
+  const months = ['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec'];
+  document.getElementById('todayDay').textContent = days[d.getDay()];
+  document.getElementById('todayDate').textContent = `${d.getDate()}. ${months[d.getMonth()]}`;
+}
+
+// ─── Storage ──────────────────────────────────────────────────────
+function loadData() {
+  try {
+    const raw = localStorage.getItem('john_checkin_v2');
+    if (raw) {
+      const data = JSON.parse(raw);
+      history = data.history || [];
+      inbodyHistory = data.inbodyHistory || [];
+      const tk = todayKey();
+      const existing = history.find(h => h.date === tk);
+      if (existing) {
+        today = existing.checks || {};
+        proteinToday = existing.protein || null;
+        sleepToday = existing.sleep || null;
+        hrvToday = existing.hrv || null;
+        rhrToday = existing.rhr || null;
+        document.getElementById('dayNote').value = existing.note || '';
+        restoreUI();
+        showScore(existing.score);
+      }
+    }
+  } catch(e) { history = []; inbodyHistory = []; }
+  updateStreak();
+  updateNextScanDate();
+}
+
+function saveData() {
+  try {
+    localStorage.setItem('john_checkin_v2', JSON.stringify({ history, inbodyHistory }));
+  } catch(e) {}
+}
+
+// ─── Toggle / Set ─────────────────────────────────────────────────
+function toggle(key) {
+  if (today[key] === 'yes') set(key, 'no');
+  else if (today[key] === 'no') set(key, null);
+  else set(key, 'yes');
+}
+
+function set(key, val) {
+  today[key] = val;
+  updateItem(key);
+}
+
+function updateItem(key) {
+  const item = document.getElementById('item-' + key);
+  const yBtn = document.getElementById(key + '-yes');
+  const nBtn = document.getElementById(key + '-no');
+  if (!item) return;
+  item.className = 'check-item' + (BAD_ITEMS.includes(key) ? ' bad-item' : '');
+  yBtn.className = 'toggle-btn yes-btn';
+  nBtn.className = 'toggle-btn no-btn';
+  if (today[key] === 'yes') {
+    item.classList.add('yes');
+    yBtn.classList.add('active');
+  } else if (today[key] === 'no') {
+    item.classList.add('no');
+    nBtn.classList.add('active');
+  }
+}
+
+function restoreUI() {
+  CHECKS.forEach(k => updateItem(k));
+  if (proteinToday) {
+    updateProteinDisplay(proteinToday);
+    document.querySelectorAll('.step-btn').forEach(b => {
+      if (parseInt(b.textContent) === proteinToday || b.textContent.includes(proteinToday)) {
+        b.classList.add('active');
+      }
+    });
+  }
+  if (sleepToday) updateSleepDisplay(sleepToday);
+  if (hrvToday) { document.getElementById('hrvVal').textContent = hrvToday; }
+  if (rhrToday) { document.getElementById('rhrVal').textContent = rhrToday; }
+}
+
+// ─── Protein ──────────────────────────────────────────────────────
+function setProtein(g) {
+  proteinToday = g;
+  document.querySelectorAll('.step-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  updateProteinDisplay(g);
+}
+
+function updateProteinDisplay(g) {
+  document.getElementById('proteinVal').textContent = g === 220 ? '220+' : g;
+  const pct = Math.min((g / 220) * 100, 100);
+  const bar = document.getElementById('proteinBar');
+  bar.style.width = pct + '%';
+  bar.className = 'protein-bar-fill' + (g >= 180 ? ' good' : '');
+}
+
+// ─── Sleep / HRV / RHR ───────────────────────────────────────────
+function setSleep(h) {
+  sleepToday = h;
+  document.querySelectorAll('#panel-today .step-btn').forEach(b => {
+    if (b.getAttribute('onclick') && b.getAttribute('onclick').includes('setSleep')) b.classList.remove('active');
+  });
+  event.target.classList.add('active');
+  updateSleepDisplay(h);
+}
+
+function updateSleepDisplay(h) {
+  document.getElementById('sleepVal').textContent = h === 8.5 ? '8½+' : h;
+  const pct = Math.min((h / 9) * 100, 100);
+  const bar = document.getElementById('sleepBar');
+  bar.style.width = pct + '%';
+  bar.className = 'protein-bar-fill' + (h >= 7 ? ' good' : '');
+}
+
+function setHRV(v) {
+  hrvToday = v;
+  event.target.parentElement.querySelectorAll('.step-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('hrvVal').textContent = v === 70 ? '70+' : v;
+}
+
+function setRHR(v) {
+  rhrToday = v;
+  event.target.parentElement.querySelectorAll('.step-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('rhrVal').textContent = v === 70 ? '70+' : v;
+}
+
+// ─── InBody ───────────────────────────────────────────────────────
+function saveInBody() {
+  const date = document.getElementById('scanDate').value;
+  const vaegt = parseFloat(document.getElementById('scanVaegt').value);
+  const muskel = parseFloat(document.getElementById('scanMuskel').value);
+  const fedt = parseFloat(document.getElementById('scanFedt').value);
+  const score = parseInt(document.getElementById('scanScore').value);
+
+  if (!date || !vaegt) { alert('Indtast mindst dato og vægt'); return; }
+
+  const entry = { date, vaegt, muskel, fedt, score };
+  inbodyHistory = inbodyHistory.filter(e => e.date !== date);
+  inbodyHistory.unshift(entry);
+  inbodyHistory.sort((a,b) => b.date.localeCompare(a.date));
+  if (inbodyHistory.length > 20) inbodyHistory = inbodyHistory.slice(0,20);
+
+  saveData();
+  updateNextScanDate();
+  renderInBodyHistory();
+
+  // Clear fields
+  ['scanDate','scanVaegt','scanMuskel','scanFedt','scanScore'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+}
+
+function updateNextScanDate() {
+  const el = document.getElementById('nextScanDate');
+  if (!el) return;
+  if (inbodyHistory.length === 0) { el.textContent = 'Ingen scanning endnu – book en nu!'; return; }
+  const last = new Date(inbodyHistory[0].date);
+  const next = new Date(last);
+  next.setDate(next.getDate() + 14);
+  const days = ['Søn','Man','Tir','Ons','Tor','Fre','Lør'];
+  const months = ['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec'];
+  const diff = Math.ceil((next - new Date()) / (1000*60*60*24));
+  const diffText = diff <= 0 ? '⚠️ Forfaldent!' : diff === 1 ? 'I morgen!' : `Om ${diff} dage`;
+  el.textContent = `${days[next.getDay()]} ${next.getDate()}. ${months[next.getMonth()]} · ${diffText}`;
+}
+
+function renderInBodyHistory() {
+  const container = document.getElementById('inbodyHistory');
+  if (inbodyHistory.length === 0) {
+    container.innerHTML = `<div class="history-empty"><div class="history-empty-icon">⚖️</div><div class="history-empty-text">Ingen scanninger endnu.<br>Mål: Scan hver 14. dag.</div></div>`;
+    return;
+  }
+  const days = ['Søn','Man','Tir','Ons','Tor','Fre','Lør'];
+  const months = ['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec'];
+
+  // Calculate changes vs previous
+  container.innerHTML = inbodyHistory.map((e, i) => {
+    const d = new Date(e.date);
+    const prev = inbodyHistory[i+1];
+    const vaegt_d = prev && e.vaegt ? (e.vaegt - prev.vaegt).toFixed(1) : null;
+    const muskel_d = prev && e.muskel ? (e.muskel - prev.muskel).toFixed(1) : null;
+    const fedt_d = prev && e.fedt ? (e.fedt - prev.fedt).toFixed(1) : null;
+
+    const delta = (val, reverse=false) => {
+      if (!val) return '';
+      const num = parseFloat(val);
+      const good = reverse ? num < 0 : num > 0;
+      const color = num === 0 ? 'var(--muted)' : good ? 'var(--green)' : 'var(--red)';
+      const sign = num > 0 ? '+' : '';
+      return `<span style="font-size:0.65rem;color:${color};font-weight:700">${sign}${val}</span>`;
+    };
+
+    return `
+      <div class="history-entry">
+        <div class="history-date">
+          <div class="history-date-text">${days[d.getDay()]} ${d.getDate()}. ${months[d.getMonth()]} ${d.getFullYear()}</div>
+          ${e.score ? `<div class="history-score" style="color:var(--green)">${e.score} pts</div>` : ''}
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:4px">
+          ${e.vaegt ? `<div style="text-align:center;background:var(--bg);border-radius:8px;padding:8px"><div style="font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800">${e.vaegt}</div><div style="font-size:0.6rem;color:var(--muted);text-transform:uppercase">kg ${delta(vaegt_d, true)}</div></div>` : ''}
+          ${e.muskel ? `<div style="text-align:center;background:var(--bg);border-radius:8px;padding:8px"><div style="font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;color:var(--green)">${e.muskel}</div><div style="font-size:0.6rem;color:var(--muted);text-transform:uppercase">muskel ${delta(muskel_d)}</div></div>` : ''}
+          ${e.fedt ? `<div style="text-align:center;background:var(--bg);border-radius:8px;padding:8px"><div style="font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;color:var(--orange)">${e.fedt}%</div><div style="font-size:0.6rem;color:var(--muted);text-transform:uppercase">fedt ${delta(fedt_d, true)}</div></div>` : ''}
+        </div>
+      </div>`;
+  }).join('');
+}
+function calcScore() {
+  let pts = 0;
+  let breakdown = [];
+
+  // Positive checks
+  ['dvitamin','omega3','magnesium','kollagen','maaltidsplan','traening','mobilitet'].forEach(k => {
+    if (today[k] === 'yes') { pts += 10; breakdown.push({label: CHECK_LABELS[k], ok: true}); }
+    else if (today[k] === 'no') breakdown.push({label: CHECK_LABELS[k], ok: false});
+  });
+
+  // Bad items – "yes" = bad, "no" = good
+  if (today['alkohol'] === 'no') { pts += 15; breakdown.push({label: 'Alkohol fri', ok: true}); }
+  else if (today['alkohol'] === 'yes') breakdown.push({label: 'Drak alkohol', ok: false});
+
+  if (today['snacks'] === 'no') { pts += 10; breakdown.push({label: 'Ingen snacks', ok: true}); }
+  else if (today['snacks'] === 'yes') breakdown.push({label: 'Spiste snacks', ok: false});
+
+  // Protein
+  if (proteinToday >= 180) { pts += 15; breakdown.push({label: 'Protein ≥180g', ok: true}); }
+  else if (proteinToday) breakdown.push({label: `Protein kun ${proteinToday}g`, ok: false});
+
+  // Sleep bonus/penalty
+  if (sleepToday >= 7) { pts += 10; breakdown.push({label: `Søvn ${sleepToday}t ✓`, ok: true}); }
+  else if (sleepToday) breakdown.push({label: `Søvn kun ${sleepToday}t`, ok: false});
+
+  return { score: pts, max: 135, breakdown };
+}
+
+function showScore(score) {
+  const disp = document.getElementById('scoreDisplay');
+  const num = document.getElementById('scoreNum');
+  disp.classList.add('show');
+  const pct = Math.round((score / 135) * 100);
+  num.textContent = pct + '%';
+  num.style.color = pct >= 80 ? 'var(--green)' : pct >= 50 ? 'var(--yellow)' : 'var(--red)';
+}
+
+// ─── Save ─────────────────────────────────────────────────────────
+function saveDay() {
+  const { score, breakdown } = calcScore();
+  const tk = todayKey();
+  const entry = {
+    date: tk,
+    checks: { ...today },
+    protein: proteinToday,
+    sleep: sleepToday,
+    hrv: hrvToday,
+    rhr: rhrToday,
+    note: document.getElementById('dayNote').value,
+    score,
+    breakdown
+  };
+
+  // Remove existing entry for today
+  history = history.filter(h => h.date !== tk);
+  history.unshift(entry);
+  // Keep max 90 days
+  if (history.length > 90) history = history.slice(0, 90);
+
+  saveData();
+  updateStreak();
+  renderWeekDots();
+  showScore(score);
+
+  const btn = document.getElementById('saveBtn');
+  btn.textContent = '✓ Gemt!';
+  btn.disabled = true;
+  setTimeout(() => {
+    btn.textContent = 'Gem dagens check-in';
+    btn.disabled = false;
+  }, 2000);
+}
+
+// ─── Streak ───────────────────────────────────────────────────────
+function updateStreak() {
+  let streak = 0;
+  const today = new Date();
+  for (let i = 0; i < 90; i++) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    const entry = history.find(h => h.date === key);
+    if (entry && entry.score > 0) streak++;
+    else if (i > 0) break;
+  }
+  document.getElementById('streakCount').textContent = streak;
+}
+
+function renderWeekDots() {
+  const container = document.getElementById('weekDots');
+  container.innerHTML = '';
+  const tk = todayKey();
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    const dot = document.createElement('div');
+    dot.className = 'week-dot';
+    if (key === tk) {
+      dot.classList.add('today');
+    } else {
+      const entry = history.find(h => h.date === key);
+      if (entry) {
+        const pct = entry.score / 135;
+        if (pct >= 0.8) dot.classList.add('perfect');
+        else if (pct >= 0.5) dot.classList.add('partial');
+        else dot.classList.add('missed');
+      }
+    }
+    container.appendChild(dot);
+  }
+}
+
+// ─── History Panel ────────────────────────────────────────────────
+function renderHistory() {
+  const container = document.getElementById('historyContent');
+  if (history.length === 0) {
+    container.innerHTML = `<div class="history-empty"><div class="history-empty-icon">📅</div><div class="history-empty-text">Ingen historik endnu.<br>Start med at logge i dag!</div></div>`;
+    return;
+  }
+  const days = ['Søn','Man','Tir','Ons','Tor','Fre','Lør'];
+  const months = ['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec'];
+  container.innerHTML = history.map(e => {
+    const d = new Date(e.date);
+    const pct = Math.round((e.score / 135) * 100);
+    const color = pct >= 80 ? 'var(--green)' : pct >= 50 ? 'var(--yellow)' : 'var(--red)';
+    const chips = (e.breakdown || []).map(b =>
+      `<span class="h-chip ${b.ok ? 'ok' : 'miss'}">${b.label}</span>`
+    ).join('');
+    const noteHtml = e.note ? `<div class="history-note">${e.note}</div>` : '';
+    return `
+      <div class="history-entry">
+        <div class="history-date">
+          <div class="history-date-text">${days[d.getDay()]} ${d.getDate()}. ${months[d.getMonth()]}</div>
+          <div class="history-score" style="color:${color}">${pct}%</div>
+        </div>
+        <div class="history-chips">${chips}</div>
+        ${e.protein ? `<span class="h-chip ${e.protein >= 180 ? 'ok' : 'warn'}">Protein: ${e.protein}g</span>` : ''}
+        ${e.sleep ? `<span class="h-chip ${e.sleep >= 7 ? 'ok' : 'miss'}">Søvn: ${e.sleep}t</span>` : ''}
+        ${e.hrv ? `<span class="h-chip ok">HRV: ${e.hrv}</span>` : ''}
+        ${noteHtml}
+      </div>`;
+  }).join('');
+}
+
+// ─── Stats Panel ──────────────────────────────────────────────────
+function renderStats() {
+  const container = document.getElementById('statsContent');
+  if (history.length < 3) {
+    container.innerHTML = `<div class="history-empty"><div class="history-empty-icon">📊</div><div class="history-empty-text">Log mindst 3 dage<br>for at se statistik.</div></div>`;
+    return;
+  }
+
+  const avgScore = Math.round(history.reduce((s,e) => s + (e.score/135*100), 0) / history.length);
+  const streak = parseInt(document.getElementById('streakCount').textContent);
+  const bestScore = Math.round(Math.max(...history.map(e => e.score/135*100)));
+
+  // Habit rates
+  const habitRates = {};
+  CHECKS.forEach(k => {
+    const total = history.filter(e => e.checks && e.checks[k]).length;
+    const good = history.filter(e => {
+      if (!e.checks) return false;
+      if (BAD_ITEMS.includes(k)) return e.checks[k] === 'no';
+      return e.checks[k] === 'yes';
+    }).length;
+    habitRates[k] = total > 0 ? Math.round((good / history.length) * 100) : 0;
+  });
+
+  const scoreColor = avgScore >= 80 ? 'var(--green)' : avgScore >= 50 ? 'var(--yellow)' : 'var(--red)';
+  const habitsHtml = Object.entries(habitRates).map(([k,pct]) => {
+    const barClass = pct >= 80 ? '' : pct >= 50 ? 'warn' : 'bad';
+    return `
+      <div class="habit-row">
+        <div class="habit-name">${CHECK_LABELS[k]}</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="habit-bar-wrap"><div class="habit-bar ${barClass}" style="width:${pct}%"></div></div>
+          <div class="habit-pct" style="color:${pct>=80?'var(--green)':pct>=50?'var(--yellow)':'var(--red)'}">${pct}%</div>
+        </div>
+      </div>`;
+  }).join('');
+
+  container.innerHTML = `
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-val" style="color:${scoreColor}">${avgScore}%</div>
+        <div class="stat-lbl">Gns. score</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" style="color:var(--orange)">${streak}</div>
+        <div class="stat-lbl">Dages streak</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" style="color:var(--green)">${bestScore}%</div>
+        <div class="stat-lbl">Bedste dag</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val">${history.length}</div>
+        <div class="stat-lbl">Dage logget</div>
+      </div>
+    </div>
+    <div class="section-label" style="margin-top:0">Vaner denne periode</div>
+    ${habitsHtml}
+  `;
+}
+
+// ─── Tabs ─────────────────────────────────────────────────────────
+function showTab(name, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  btn.classList.add('active');
+  if (name === 'history') renderHistory();
+  if (name === 'stats') renderStats();
+  if (name === 'inbody') { renderInBodyHistory(); updateNextScanDate(); }
+}
+
+init();
+</script>
+</body>
+</html>
+<style>
+.tabs { background: var(--surface) !important; border-top: 1px solid var(--border); }
+.tab { color: var(--muted) !important; }
+.tab.active { color: var(--orange) !important; border-bottom-color: var(--orange) !important; }
+</style>
