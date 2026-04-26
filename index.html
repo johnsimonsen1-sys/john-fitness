@@ -12,12 +12,12 @@
       --border: #e0dbd7; --accent: #8B1C1C; --accent-light: rgba(139,28,28,0.08);
       --text: #1a1a1a; --muted: #8a7f7a;
       --user-bg: #8B1C1C; --user-text: #ffffff; --radius: 14px;
-      --green: #16a34a; --green-light: rgba(22,163,74,0.08);
+      --green: #16a34a; --green-light: rgba(22,163,74,0.1);
     }
     body { background:var(--bg); color:var(--text); font-family:'Barlow',sans-serif; height:100dvh; display:flex; flex-direction:column; overflow:hidden; }
 
     /* HEADER */
-    header { display:flex; align-items:center; gap:14px; padding:14px 24px; border-bottom:2px solid var(--border); background:var(--surface); flex-shrink:0; }
+    header { display:flex; align-items:center; gap:14px; padding:14px 24px; border-bottom:2px solid var(--border); background:var(--surface); flex-shrink:0; z-index:10; }
     .logo-box { width:46px; height:46px; flex-shrink:0; }
     .header-text h1 { font-family:'Barlow Condensed',sans-serif; font-size:22px; font-weight:800; letter-spacing:1px; color:var(--accent); line-height:1; text-transform:uppercase; }
     .header-text p { font-size:12px; color:var(--muted); margin-top:2px; text-transform:uppercase; letter-spacing:0.5px; }
@@ -26,43 +26,81 @@
     .dot { width:8px; height:8px; border-radius:50%; background:#22c55e; animation:pulse 2s infinite; }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
 
-    /* TIP-KNAP i header */
+    /* TILFØJ INFO KNAP */
     #tipToggleBtn {
       display:flex; align-items:center; gap:6px;
-      background: var(--green-light);
-      border: 1.5px solid rgba(22,163,74,0.3);
-      color: var(--green);
-      padding: 6px 12px;
-      border-radius: 20px;
-      font-size: 13px;
-      font-family: 'Barlow', sans-serif;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.15s;
-      white-space: nowrap;
+      background:var(--green-light); border:1.5px solid rgba(22,163,74,0.35);
+      color:var(--green); padding:7px 14px; border-radius:20px;
+      font-size:13px; font-family:'Barlow',sans-serif; font-weight:600;
+      cursor:pointer; transition:all 0.15s; white-space:nowrap;
     }
-    #tipToggleBtn:hover { background: rgba(22,163,74,0.15); }
-    #tipToggleBtn svg { width:14px; height:14px; }
+    #tipToggleBtn:hover { background:rgba(22,163,74,0.18); }
+    #tipToggleBtn svg { width:14px; height:14px; flex-shrink:0; }
 
-    /* TIP-PANEL */
+    /* TIP PANEL */
     #tipPanel {
       background: white;
       border-bottom: 2px solid var(--border);
       flex-shrink: 0;
-      display: none;
-      animation: slideDown 0.2s ease;
-      height: 420px;
       overflow: hidden;
+      max-height: 0;
+      transition: max-height 0.3s ease, padding 0.3s ease;
+      padding: 0 24px;
     }
-    #tipPanel.open { display: block; }
-    @keyframes slideDown { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
-    #tipPanel iframe { width:100%; height:420px; border:none; display:block; }
+    #tipPanel.open {
+      max-height: 200px;
+      padding: 16px 24px;
+    }
 
-    /* LOADING BANNER */
-    #loadingBanner { display:flex; align-items:center; gap:10px; padding:10px 20px; background:var(--accent-light); border-bottom:1px solid rgba(139,28,28,0.15); font-size:13px; color:var(--accent); flex-shrink:0; }
-    #loadingBanner.hidden { display:none; }
-    .spin { width:14px; height:14px; border:2px solid var(--accent); border-top-color:transparent; border-radius:50%; animation:spin 0.7s linear infinite; flex-shrink:0; }
-    @keyframes spin { to{transform:rotate(360deg)} }
+    .tip-inner { display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap; }
+
+    .tip-field { display:flex; flex-direction:column; gap:4px; }
+    .tip-field label { font-size:11px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; }
+
+    .tip-field input,
+    .tip-field select {
+      background: var(--surface2);
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 13.5px;
+      font-family: 'Barlow', sans-serif;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s;
+      height: 38px;
+    }
+    .tip-field input:focus,
+    .tip-field select:focus { border-color: var(--green); }
+    .tip-field.navn input { width: 140px; }
+    .tip-field.emne select { width: 180px; }
+
+    .tip-field.besked { flex:1; min-width: 200px; }
+    .tip-field.besked input {
+      width: 100%;
+    }
+
+    #submitTipBtn {
+      background: var(--green);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 0 18px;
+      height: 38px;
+      font-size: 13.5px;
+      font-family: 'Barlow', sans-serif;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: opacity 0.15s;
+      flex-shrink: 0;
+    }
+    #submitTipBtn:hover { opacity: 0.85; }
+    #submitTipBtn:disabled { opacity: 0.4; cursor:not-allowed; }
+
+    #tipStatus { font-size:12px; font-weight:600; margin-top:8px; display:none; }
+    #tipStatus.ok  { color:var(--green); display:block; }
+    #tipStatus.err { color:#dc2626; display:block; }
 
     /* CHAT */
     #chat { flex:1; overflow-y:auto; padding:24px 20px; display:flex; flex-direction:column; gap:16px; scroll-behavior:smooth; }
@@ -91,12 +129,10 @@
     .typing-indicator span:nth-child(2){animation-delay:.2s} .typing-indicator span:nth-child(3){animation-delay:.4s}
     @keyframes bounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-6px)} }
 
-    /* QUICK REPLIES */
     .quick-replies { display:flex; flex-wrap:wrap; gap:8px; padding:0 20px 10px; flex-shrink:0; }
     .qr-btn { background:white; border:1.5px solid var(--border); color:var(--text); padding:7px 14px; border-radius:20px; font-size:13px; font-family:'Barlow',sans-serif; font-weight:500; cursor:pointer; transition:all 0.15s; white-space:nowrap; }
     .qr-btn:hover { border-color:var(--accent); color:var(--accent); background:var(--accent-light); }
 
-    /* INPUT */
     .input-area { padding:12px 20px 18px; border-top:2px solid var(--border); background:var(--surface); flex-shrink:0; }
     .input-row { display:flex; gap:10px; align-items:flex-end; background:var(--surface2); border:1.5px solid var(--border); border-radius:12px; padding:10px 14px; transition:border-color 0.2s; }
     .input-row:focus-within { border-color:var(--accent); }
@@ -139,12 +175,29 @@
 
 <!-- TIP PANEL -->
 <div id="tipPanel">
-  <iframe src="https://docs.google.com/forms/d/1NNFMwGsiYrePB-lUCjhTrGYHwnMcXPK1gaUvdofwYhk/viewform?embedded=true" frameborder="0" marginheight="0" marginwidth="0">Indlæser formular...</iframe>
-</div>
-
-<div id="loadingBanner">
-  <div class="spin"></div>
-  <span>Henter opdateret indhold fra Box365 Drive...</span>
+  <div class="tip-inner">
+    <div class="tip-field navn">
+      <label>Navn</label>
+      <input type="text" id="tipName" placeholder="Dit navn"/>
+    </div>
+    <div class="tip-field emne">
+      <label>Emne</label>
+      <select id="tipCategory">
+        <option value="Skader & Sikkerhed">🩹 Skader & Sikkerhed</option>
+        <option value="Udstyr">🏋️ Udstyr</option>
+        <option value="Procedurer">📋 Procedurer</option>
+        <option value="Medlemmer">👥 Medlemmer</option>
+        <option value="Faciliteter">🏢 Faciliteter</option>
+        <option value="Andet">💡 Andet</option>
+      </select>
+    </div>
+    <div class="tip-field besked">
+      <label>Besked</label>
+      <input type="text" id="tipText" placeholder="Skriv kort hvad du vil tilføje..."/>
+    </div>
+    <button id="submitTipBtn" onclick="submitTip()">Gem →</button>
+  </div>
+  <div id="tipStatus"></div>
 </div>
 
 <div id="chat">
@@ -158,12 +211,12 @@
     </div>
     <div class="welcome">
       <h2>Hej, Coach! 👊</h2>
-      <p>Jeg henter de seneste oplysninger fra Box365 Drive – et øjeblik...</p>
+      <p>Jeg er klar! Stil et spørgsmål, eller brug "Tilføj info" øverst til at bidrage til vidensbasen.</p>
     </div>
   </div>
 </div>
 
-<div class="quick-replies" id="quickReplies" style="display:none">
+<div class="quick-replies">
   <button class="qr-btn" onclick="sendQuick('Hvem er ledelsen i Box365?')">Ledelsen</button>
   <button class="qr-btn" onclick="sendQuick('Hvem kontakter jeg angående økonomi?')">Økonomi kontakt</button>
   <button class="qr-btn" onclick="sendQuick('Hvem er ansvarlig for marketing?')">Marketing</button>
@@ -174,38 +227,46 @@
 <div class="input-area">
   <div class="input-row">
     <textarea id="userInput" placeholder="Stil et spørgsmål..." rows="1"></textarea>
-    <button id="sendBtn" onclick="sendMessage()" disabled>
+    <button id="sendBtn" onclick="sendMessage()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <line x1="22" y1="2" x2="11" y2="13"></line>
         <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
       </svg>
     </button>
   </div>
-  <div class="input-hint">Powered by Claude · Brug "Tilføj info" til at forbedre chatbotten</div>
+  <div class="input-hint">Powered by Claude · Box365 Coach-system</div>
 </div>
 
 <script>
-// ── Konfiguration ──────────────────────────────────────────────
-const SHEET_ID   = '1PiF8mUTej9zJAaMfo3abqrnovIVvVJuBsZ8rrAfoS5g';
-const DRIVE_FILES = [
-  { label: "Ledelsesoversigt", id: "1z6ilCor4guCPTcZSxJqbY1f7oJONvhMzJ1rbLd7FS0Y" },
-  { label: "Kontaktliste",     id: "1H8KTYTygBGJg3YCtn7K48VJa8Wt6IrKluzLXsVlcqA4" }
-];
+const SHEET_ID = '16AhTAaxAoO1_xyQQsalTmHmhiaEqQHlokEHCim8f9AY';
 
-const BASE_SYSTEM = `Du er Box365's interne AI-assistent til COACHES.
-Box365 er et CrossFit & HYROX Affiliate med afdelinger i Esbjerg og Horsens.
+const SYSTEM_PROMPT = `Du er Box365's interne AI-assistent til COACHES.
+Box365 er et CrossFit & HYROX Affiliate og funktionelt træningscenter med afdelinger i Esbjerg og Horsens.
 Svar altid på dansk. Vær direkte og praktisk. Brug bullet points ved lister.
-Henvis til konkrete navne og kontaktinfo når det er relevant.
+
+LEDELSE & KONTAKTER:
+- John Simonsen – Medejer & Daglig leder Esbjerg. Ansvar: Økonomi, regnskab, firmaaftaler, BRP bookingsystem, medarbejdere i Esbjerg. Mobil: 60554856. Email: john@box365.dk
+- Louise Maria Højsgaard – Marketing & Holdleder Horsens. Ansvar: Marketing, holdplanlægning, Horsens afdeling, medarbejdere i Horsens. Mobil: 21576252. Email: louise_hoejsgaard@hotmail.com
+- Joan Jakobsen – Strategi. Ansvar: Strategi og fremtidig udvikling af Box365. Mobil: 93922511. Email: j-jakobsen@hotmail.com
+
+PROGRAMMER:
+- CrossFit klasser (begynder, øvet, RX)
+- HYROX-forberedelse og træning
+- Open gym / selvtræning
+
+REGLER:
+- Ryd altid udstyr på plads efter brug
+- Respekter andre under træning
+- Mobil på lydløs under klasser
+- Sikkerhed er altid nummer 1
+
+VEJLEDNING – hvad gør jeg hvis...
+- Et medlem klager: Lyt aktivt, anerkend problemet, eskaler til daglig leder hvis nødvendigt
+- Et medlem skader sig: Stop klassen, yd førstehjælp, kontakt nødhjælp ved behov, udfyld hændelsesrapport
+- Et medlem ikke overholder regler: Giv venlig men tydelig mundtlig advarsel. Ved gentagelse: kontakt leder
+- Udstyr er beskadiget: Tag det ud af brug med det samme, sæt mærkat på, informer leder
+
 Svar KUN på spørgsmål relateret til Box365.`;
-
-let systemPrompt = BASE_SYSTEM;
-let history = [];
-
-const chat       = document.getElementById('chat');
-const input      = document.getElementById('userInput');
-const btn        = document.getElementById('sendBtn');
-const banner     = document.getElementById('loadingBanner');
-const quickReplies = document.getElementById('quickReplies');
 
 const AVATAR_SVG = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
   <polygon points="50,4 91,27 97,72 68,97 32,97 3,72 9,27" fill="white" stroke="#8B1C1C" stroke-width="6"/>
@@ -213,97 +274,55 @@ const AVATAR_SVG = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg
   <text x="50" y="74" text-anchor="middle" font-family="'Barlow Condensed',sans-serif" font-weight="800" font-size="30" fill="#8B1C1C">365</text>
 </svg>`;
 
+let history = [];
+const chat  = document.getElementById('chat');
+const input = document.getElementById('userInput');
+const btn   = document.getElementById('sendBtn');
+
 // ── TIP PANEL ─────────────────────────────────────────────────
 function toggleTipPanel() {
-  const panel = document.getElementById('tipPanel');
-  panel.classList.toggle('open');
-
+  document.getElementById('tipPanel').classList.toggle('open');
 }
 
+async function submitTip() {
+  const name     = document.getElementById('tipName').value.trim();
+  const category = document.getElementById('tipCategory').value;
+  const text     = document.getElementById('tipText').value.trim();
+  const status   = document.getElementById('tipStatus');
+  const submitBtn = document.getElementById('submitTipBtn');
+
+  if (!text) {
+    status.className = 'err';
+    status.textContent = '⚠️ Skriv venligst en besked.';
+    return;
+  }
 
   submitBtn.disabled = true;
   status.className = ''; status.textContent = '';
 
-  const now = new Date().toLocaleString('da-DK', { timeZone: 'Europe/Copenhagen' });
-  const row = `${now}\t${name || 'Anonym'}\t${category}\t${text}`;
-
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    await fetch('https://script.google.com/macros/s/AKfycbxuEi4hMPwjw7uuIU9j0l654Ol1NcJSXjZXxxwdg5xAaBSecNnApWZ9-HNWmVxbFww/exec', {
       method: 'POST',
+      mode: 'no-cors',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        mcp_servers: [{ type: 'url', url: 'https://drivemcp.googleapis.com/mcp/v1', name: 'google-drive' }],
-        messages: [{
-          role: 'user',
-          content: `Tilføj følgende række til Google Sheets fil med id="${SHEET_ID}". 
-Hvis arket er tomt, opret først en header-række med kolonnerne: Dato | Navn | Kategori | Info/Feedback
-Tilføj derefter denne datarrække: ${row}
-Bekræft kort når det er gemt.`
-        }]
-      })
+      body: JSON.stringify({ navn: name || 'Anonym', kategori: category, besked: text })
     });
 
-    const data = await response.json();
-    const reply = data.content?.filter(b => b.type === 'text').map(b => b.text).join('') || '';
+    status.className = 'ok';
+    status.textContent = '✅ Tak! Din info er gemt.';
+    document.getElementById('tipName').value = '';
+    document.getElementById('tipText').value = '';
 
-    if (reply) {
-      status.className = 'ok';
-      status.textContent = '✅ Gemt i Box365 Drive! Tak for dit bidrag.';
+    setTimeout(() => {
+      document.getElementById('tipPanel').classList.remove('open');
+      status.className = ''; status.textContent = '';
+    }, 2000);
 
-      // Vis bekræftelse i chat
-      addMessage('bot', formatResponse(`**Ny info tilføjet til vidensbasen** 📋\n\n**Kategori:** ${category}\n**Fra:** ${name || 'Anonym'}\n\n"${text}"\n\nTak! Ledelsen kan nu bruge dette til at opdatere vejledninger.`));
-
-      setTimeout(() => {
-        document.getElementById('tipPanel').classList.remove('open');
-        status.className = ''; status.textContent = '';
-      }, 2500);
-    } else {
-      throw new Error('Intet svar fra API');
-    }
   } catch(err) {
     status.className = 'err';
-    status.textContent = '❌ Kunne ikke gemme – prøv igen eller kontakt John.';
-    console.error(err);
+    status.textContent = '❌ Kunne ikke gemme – prøv igen.';
   }
   submitBtn.disabled = false;
-}
-
-// ── DRIVE INDHOLD ─────────────────────────────────────────────
-async function loadDriveContent() {
-  try {
-    const filePrompts = DRIVE_FILES.map(f =>
-      `Læs Google Drive fil med id="${f.id}" (${f.label}) og returner indholdet som ren tekst.`
-    ).join('\n');
-
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        mcp_servers: [{ type: 'url', url: 'https://drivemcp.googleapis.com/mcp/v1', name: 'google-drive' }],
-        messages: [{ role: 'user', content: `${filePrompts}\n\nReturnér det samlede indhold fra begge filer som én tekstblok. Kun indholdet, ingen kommentarer.` }]
-      })
-    });
-
-    const data = await response.json();
-    const driveText = data.content.filter(b => b.type === 'text').map(b => b.text).join('\n');
-
-    if (driveText && driveText.length > 50) {
-      systemPrompt = `${BASE_SYSTEM}\n\n═══════════════════════════\nLIVE DATA FRA BOX365 DRIVE\n═══════════════════════════\n\n${driveText}`;
-    }
-  } catch(err) {
-    console.warn('Drive-hentning fejlede:', err);
-  }
-}
-
-function showReadyMessage() {
-  banner.classList.add('hidden');
-  btn.disabled = false;
-  quickReplies.style.display = 'flex';
-  document.querySelector('.welcome p').textContent = 'Jeg er klar! Stil et spørgsmål, eller brug "Tilføj info" øverst til at bidrage til vidensbasen.';
 }
 
 // ── CHAT ──────────────────────────────────────────────────────
@@ -351,25 +370,27 @@ function formatResponse(text) {
   return result;
 }
 
-function sendQuick(text) {
-  quickReplies.style.display = 'none';
-  input.value = text;
-  sendMessage();
-}
+function sendQuick(text) { input.value = text; sendMessage(); }
 
 async function sendMessage() {
   const text = input.value.trim();
-  if (!text || btn.disabled) return;
-  quickReplies.style.display = 'none';
+  if (!text) return;
   input.value = ''; input.style.height = 'auto'; btn.disabled = true;
   addMessage('user', text);
   history.push({ role: 'user', content: text });
   showTyping();
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const res = await fetch('https://box365-api.johnsimonsen1.workers.dev', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1000, system: systemPrompt, messages: history })
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'claude-3-5-sonnet-20241022',
+        max_tokens: 1000,
+        system: SYSTEM_PROMPT,
+        messages: history
+      })
     });
     const data = await res.json();
     removeTyping();
@@ -383,9 +404,6 @@ async function sendMessage() {
   btn.disabled = false;
   input.focus();
 }
-
-// ── START ─────────────────────────────────────────────────────
-loadDriveContent().finally(showReadyMessage);
 </script>
 </body>
 </html>
